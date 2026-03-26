@@ -10,18 +10,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
+      - name: Check secrets
+        run: |
+          if [ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ]; then
+            echo "Secrets NOT working"
+            exit 1
+          else
+            echo "Secrets OK"
+          fi
+
+      - name: Configure AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1   # change if needed
+          aws-region: us-east-1
 
-      - name: Verify credentials (IMPORTANT)
+      - name: Test AWS
         run: aws sts get-caller-identity
 
-      - name: Deploy to S3
+      - name: Deploy
         run: aws s3 sync . s3://YOUR-BUCKET-NAME --delete
