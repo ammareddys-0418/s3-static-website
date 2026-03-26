@@ -1,4 +1,4 @@
-name: Test Secrets
+name: Test Deployment
 
 on:
   push:
@@ -6,15 +6,18 @@ on:
       - main
 
 jobs:
-  test:
+  test:   # ✅ renamed job
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check AWS Secret
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS CLI
         run: |
-          if [ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ]; then
-            echo "❌ SECRET NOT FOUND"
-            exit 1
-          else
-            echo "✅ SECRET FOUND"
-          fi
+          aws configure set aws_access_key_id YOUR_ACCESS_KEY
+          aws configure set aws_secret_access_key YOUR_SECRET_KEY
+          aws configure set region us-east-1
+
+      - name: Deploy to S3
+        run: aws s3 sync . s3://aws-aishu-s3bucket --delete
